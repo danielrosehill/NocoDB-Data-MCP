@@ -1,0 +1,174 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, "3.10", "3.11", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+    
+    - name: Lint with black
+      run: |
+        black --check src/
+    
+    - name: Type check with mypy
+      run: |
+        mypy src/ --ignore-missing-imports
+    
+    - name: Test with pytest
+      run: |
+        pytest --cov=nocodb_mcp --cov-report=xml
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+    
+    - name: Build package
+      run: python -m build
+    
+    - name: Check package
+      run: twine check dist/*
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: dist/
+
+  release:
+    needs: [test, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: dist
+        path: dist/
+    
+    - name: Get version from tag
+      id: get_version
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Extract version number without 'v' prefix
+        VERSION=$(echo "${{ steps.get_version.outputs.version }}" | sed 's/^v//')
+        
+        # Create changelog content
+        cat > RELEASE_NOTES.md << EOF
+        # NoCoDB Data MCP Server v${VERSION}
+        
+        ## 🚀 What's New
+        
+        This release includes comprehensive NoCoDB integration with 30 tools for database operations:
+        
+        ### ✨ Features
+        - **30 MCP Tools** for complete NoCoDB operations
+        - **Bulk Operations** for efficient data management
+        - **Advanced Querying** with filtering and pagination
+        - **Export Capabilities** in CSV, Excel, and JSON formats
+        - **Schema Management** for table structure operations
+        - **Cloudflare Access Support** for secure deployments
+        
+        ### 🛠️ Tool Categories
+        - **Base & Project Management** (3 tools)
+        - **Table Operations** (5 tools)  
+        - **Column Management** (3 tools)
+        - **Data Operations** (11 tools including bulk operations)
+        - **Views & Filtering** (6 tools)
+        - **Sorting & Organization** (3 tools)
+        - **Webhook Integration** (4 tools)
+        
+        ### 🔧 Technical Improvements
+        - Enhanced error handling and validation
+        - Comprehensive API coverage based on NoCoDB OpenAPI spec
+        - Improved documentation and examples
+        - Better type hints and code organization
+        
+        ## 📦 Installation
+        
+        \`\`\`bash
+        git clone https://github.com/danielrosehill/NocoDB-Data-MCP.git
+        cd NocoDB-Data-MCP
+        ./install.sh
+        \`\`\`
+        
+        ## 🔗 Quick Links
+        - [Configuration Guide](https://github.com/danielrosehill/NocoDB-Data-MCP/blob/main/CONFIGURATION.md)
+        - [API Reference](https://github.com/danielrosehill/NocoDB-Data-MCP/tree/main/api-ref)
+        - [Examples](https://github.com/danielrosehill/NocoDB-Data-MCP/tree/main/examples)
+        
+        ---
+        
+        **Full Changelog**: https://github.com/danielrosehill/NocoDB-Data-MCP/compare/v0.1.0...v${VERSION}
+        EOF
+        
+        echo "changelog_file=RELEASE_NOTES.md" >> $GITHUB_OUTPUT
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.get_version.outputs.version }}
+        name: "NoCoDB Data MCP Server ${{ steps.get_version.outputs.version }}"
+        body_path: ${{ steps.changelog.outputs.changelog_file }}
+        files: |
+          dist/*
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

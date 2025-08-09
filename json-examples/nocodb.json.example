@@ -1,0 +1,66 @@
+{
+    "overview": {
+      "title": "MCP Token For NocoDB",
+      "ainfo": ""
+    },
+    "details": {
+      "sections": [
+        {
+          "name": "",
+          "title": "",
+          "fields": [
+            {
+              "t": "username",
+              "n": "username",
+              "k": "string",
+              "a": {
+                "guarded": "yes"
+              },
+              "inputTraits": {
+                "autocorrection": "no",
+                "autocapitalization": "none"
+              }
+            },
+            {
+              "t": "credential",
+              "n": "credential",
+              "k": "concealed",
+              "v": "YOUR_NOCODB_API_TOKEN_HERE",
+              "a": {
+                "guarded": "yes",
+                "generate": "off"
+              },
+              "inputTraits": {
+                "autocorrection": "no"
+              }
+            },
+            {
+              "t": "type",
+              "n": "type",
+              "k": "menu"
+            },
+            {
+              "t": "filename",
+              "n": "filename",
+              "k": "string"
+            },
+            {
+              "t": "valid from",
+              "n": "validFrom",
+              "k": "date"
+            },
+            {
+              "t": "expires",
+              "n": "expires",
+              "k": "date"
+            },
+            {
+              "t": "hostname",
+              "n": "hostname",
+              "k": "string"
+            }
+          ]
+        }
+      ]
+    }
+}

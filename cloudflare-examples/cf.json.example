@@ -1,0 +1,61 @@
+{
+    "overview": {
+      "title": "CF Service Token For My Apps",
+      "ainfo": "your-email@example.com",
+      "ps": 100,
+      "pbe": 115.5291519165039,
+      "pgrng": true
+    },
+    "details": {
+      "fields": [
+        {
+          "value": "your-email@example.com",
+          "id": "",
+          "name": "username",
+          "type": "T",
+          "designation": "username"
+        },
+        {
+          "value": "YOUR_CF_ACCESS_PASSWORD",
+          "id": "",
+          "name": "password",
+          "type": "P",
+          "designation": "password"
+        }
+      ],
+      "sections": [
+        {
+          "name": "add more",
+          "title": "",
+          "fields": [
+            {
+              "t": "text",
+              "n": "niqmuwh4yz5lttebxqctccqdfe",
+              "k": "string",
+              "v": "CF-Access-Client-Id: YOUR_CLIENT_ID_HERE.access",
+              "a": {
+                "multiline": "yes"
+              },
+              "inputTraits": {
+                "autocorrection": "no",
+                "autocapitalization": "Sentences"
+              }
+            },
+            {
+              "t": "text",
+              "n": "dj7fjs4fzlvdafjz5bq3fmcyvm",
+              "k": "string",
+              "v": "CF-Access-Client-Secret: YOUR_CLIENT_SECRET_HERE",
+              "a": {
+                "multiline": "yes"
+              },
+              "inputTraits": {
+                "autocorrection": "no",
+                "autocapitalization": "Sentences"
+              }
+            }
+          ]
+        }
+      ]
+    }
+}
